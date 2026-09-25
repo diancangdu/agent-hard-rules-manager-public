@@ -662,9 +662,55 @@
       "layer": [
         "notebook"
       ]
+    },
+    {
+      "rule_id": "RULE_023",
+      "title": "本地模型用时加载、不用时关闭",
+      "category": "行为",
+      "severity": "high",
+      "trigger_keywords": [
+        "本地模型",
+        "本地部署",
+        "本地推理",
+        "加载模型",
+        "卸载模型",
+        "显存",
+        "VRAM",
+        "启动服务",
+        "常驻",
+        "开机自启",
+        "LM Studio",
+        "Ollama",
+        "ComfyUI",
+        "ACE-Step",
+        "vLLM",
+        "生图",
+        "改图",
+        "音乐生成",
+        "模型服务"
+      ],
+      "description": "本机部署的模型（含本地推理服务）一律**用时加载、不用时关闭**：不得为了「以后可能用到」而常驻，也不得在任务结束后把服务留在后台占显存/内存。判据是客观的：任务完成后对应端口应释放、显存应回落。",
+      "must_execute_actions": [
+        "调用本地模型前才启动对应服务，用完立即关闭（或设极短的空闲自动卸载）",
+        "任务收尾时检查：本地模型服务端口是否已释放、显存是否已回落（判据：Get-NetTCPConnection 看端口、nvidia-smi 看显存）",
+        "长驻型运行时优先配置自动卸载：Ollama 用 keep_alive=0；LM Studio 开 JIT 加载 + 自动卸载；自建服务用「空闲 N 分钟后自杀」",
+        "把「按需加载 + 空闲卸载」做进工具本身（插件在调用时拉起服务、空闲超时后杀掉自己拉起的进程树），而不是靠人记得关",
+        "向用户报告时说明当前是否有本地模型在跑、占多少显存"
+      ],
+      "forbidden_actions": [
+        "任务结束后把本地模型服务留在后台（即使「下次还要用」）",
+        "为了省事把本地模型设为开机自启或常驻",
+        "在没确认端口/显存已释放的情况下宣称「已关闭」",
+        "同时拉起多个本地模型服务而任务只需要一个"
+      ],
+      "created_by": "user",
+      "created_at": "2026-09-25T20:49:13+08:00",
+      "layer": [
+        "notebook"
+      ]
     }
   ],
-  "last_updated": "2026-09-25T15:15:38+08:00",
+  "last_updated": "2026-09-25T21:07:16+08:00",
   "_schema": {
     "layer": "notebook = agent reads on demand; hook = machine-enforced gate",
     "hook.tools": "DSH/Claude tool names this gate matches (PreToolUse matcher subject)",

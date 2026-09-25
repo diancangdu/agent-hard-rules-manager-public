@@ -3,7 +3,7 @@
 An **agent-agnostic hard-rules notebook** — plus, where the host agent supports
 it, a machine-enforced gate in front of tool calls.
 
-**Version: `v1.0.0`** — first public release. See [CHANGELOG.md](CHANGELOG.md).
+**Version: `v1.1.0`** — first public release. See [CHANGELOG.md](CHANGELOG.md).
 Install: [INSTALL.md](INSTALL.md).
 
 > **This is the public edition.** All machine-specific paths have been removed and
