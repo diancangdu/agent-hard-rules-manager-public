@@ -3,6 +3,9 @@
 An **agent-agnostic hard-rules notebook** — plus, where the host agent supports
 it, a machine-enforced gate in front of tool calls.
 
+**Version: `v1.0.0`** — first public release. See [CHANGELOG.md](CHANGELOG.md).
+Install: [INSTALL.md](INSTALL.md).
+
 > **This is the public edition.** All machine-specific paths have been removed and
 > replaced with neutral examples; rule files resolve their locations at runtime now.
 > It also ships `plugin/rule-gate/` — a **native DSH plugin** that enforces the
