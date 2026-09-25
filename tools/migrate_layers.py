@@ -31,7 +31,7 @@ import sys
 import shutil
 import datetime
 
-RULES = r'F:\HardRules\rules\rules.json'
+RULES = r'D:\HardRules\rules\rules.json'
 
 
 def hook_specs():
@@ -102,7 +102,7 @@ def hook_specs():
             'action': 'deny',
             'reason': ('命中死规则 RULE_005（禁止在 C 盘下载或安装）：命令的下载 / 解压 / 安装目标'
                        '落在 C 盘。请改到 F 盘等非系统盘路径后重试（D:\\data 或 '
-                       'F:\\ 下的独立目录）。'),
+                       'D:\\ 下的独立目录）。'),
         },
     }
 

@@ -10,7 +10,7 @@
 保留本文件仅作参考与本地校验用途。**注意它不识别新加的判定字段**
 （`path_any_of` / `path_not_any_of` / `path_exists` / `path_must_exist`），因此对
 RULE_004/014/016/019 的判定与原生插件不一致；改动 hook 规则后请以原生插件的测试为准：
-`node F:\\DSH-DATA\\dsh-hardrules-backup\\test_all_rules.mjs`
+`node <repo>/test_all_rules.mjs`
 
 ⚠️ 已知差异（2026-09-25，勿误以为两边等价）：本脚本只编译 `any_of` / `all_of`，
 **完全不做 path 系判定**（见下方 `if not any_of and not all_of: continue`）。
@@ -231,11 +231,11 @@ def run_hook():
 CASES = [
     # (name, payload, expect_block)
     ('secrets-hardcoded', {'tool_name': 'write', 'tool_input': {
-        'file_path': 'F:/x/a.py',
+        'file_path': 'D:/x/a.py',
         'content': 'API_KEY = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"',
     }}, True),
     ('secrets-placeholder', {'tool_name': 'write', 'tool_input': {
-        'file_path': 'F:/x/a.py',
+        'file_path': 'D:/x/a.py',
         'content': 'API_KEY = os.environ["API_KEY"]',
     }}, False),
     ('rm-rf-root', {'tool_name': 'bash', 'tool_input': {'command': 'rm -rf /'}}, True),
@@ -249,7 +249,7 @@ CASES = [
     ('curl-to-c-drive', {'tool_name': 'bash', 'tool_input': {
         'command': 'curl -L https://x/y.zip -o C:\\Users\\me\\y.zip'}}, True),
     ('curl-to-f-drive-ok', {'tool_name': 'bash', 'tool_input': {
-        'command': 'curl -L https://x/y.zip -o F:\\dl\\y.zip'}}, False),
+        'command': 'curl -L https://x/y.zip -o D:\\dl\\y.zip'}}, False),
     ('pip-install-ok', {'tool_name': 'bash', 'tool_input': {
         'command': 'pip install requests'}}, False),
     ('unrelated-tool', {'tool_name': 'read', 'tool_input': {

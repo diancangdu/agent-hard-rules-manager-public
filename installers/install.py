@@ -29,11 +29,9 @@ sys.path.insert(0, PROJECT_ROOT_DEFAULT)
 from adapters import ADAPTERS  # noqa: E402
 from adapters import _common as common  # noqa: E402
 
-# 依次尝试的 Python 解释器（sys.executable / PATH 之外的本机常见安装位）
-PYTHON_CANDIDATES = (
-    "D:\\Python\\python3.14.7\\python.exe",
-    "F:\\Anaconda3\\python.exe",
-)
+# 依次尝试的 Python 解释器（sys.executable / PATH 之外的本机常见安装位）。
+# 留空表示只用 sys.executable 与 PATH；需要时把你自己的解释器路径填进来。
+PYTHON_CANDIDATES = ()
 
 REQUIRED_FILES = (
     common.MCP_SERVER_REL,

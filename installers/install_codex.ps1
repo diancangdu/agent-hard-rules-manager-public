@@ -8,7 +8,7 @@
 #   .\install_codex.ps1                                # dry-run (default)
 #   .\install_codex.ps1 -Apply                         # write config
 #   .\install_codex.ps1 -Home C:\Users\me              # -> <Home>\.codex\config.toml
-#   .\install_codex.ps1 -Python D:\Python\python3.14.7\python.exe
+#   .\install_codex.ps1 -Python <path-to-python.exe>
 #
 # NOTE: keep this file pure ASCII. A UTF-8 BOM or non-ASCII characters here can
 # make Windows PowerShell mis-parse the quotes in the command line.
@@ -31,9 +31,7 @@ function Resolve-Python {
     $candidates += @(
         'python',
         'python.exe',
-        'py',
-        'D:\Python\python3.14.7\python.exe',
-        'F:\Anaconda3\python.exe'
+        'py'
     )
 
     foreach ($candidate in $candidates) {

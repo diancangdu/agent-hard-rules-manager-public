@@ -27,7 +27,8 @@ python installers/install.py --agent dsh --apply
 | `--allow-profile-write` | 仅 dsh：允许直接写 `cordis.patch.yml`（默认不写） |
 | `--absolute-python` | 把 `hooks/hooks.json` 里的 `python` 换成绝对解释器路径 |
 
-解释器探测顺序：`sys.executable` → PATH 里的 `python` → `D:\Python\python3.14.7\python.exe` → `F:\Anaconda3\python.exe`。
+解释器探测顺序：`sys.executable` → PATH 里的 `python` / `python.exe`。
+需要固定用某个解释器时，用 `--python <exe>`（或 PowerShell 的 `-Python <exe>`）显式指定。
 
 写入行为：**合并而非覆盖**、写入前留 `.bak_<timestamp>`、可重复运行（幂等，不重复插入）。
 
@@ -89,7 +90,7 @@ python installers/install.py --agent codex --home C:/Users/me --apply
 - `<project_root>/.claude/settings.json` —— 合并 PreToolUse hooks 段
 
 ```bash
-python installers/install.py --agent claude-code --project-root F:/MyProject --apply
+python installers/install.py --agent claude-code --project-root D:/MyProject --apply
 ```
 
 `--project-root` 请指向**你的工作项目**；默认值是 HardRules 自身。

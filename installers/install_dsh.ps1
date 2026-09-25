@@ -9,7 +9,7 @@
 #   .\install_dsh.ps1 -Apply                           # write config
 #   .\install_dsh.ps1 -Apply -AllowProfileWrite        # also write cordis.patch.yml
 #   .\install_dsh.ps1 -Home D:\dsh-data
-#   .\install_dsh.ps1 -Python D:\Python\python3.14.7\python.exe
+#   .\install_dsh.ps1 -Python <path-to-python.exe>
 #
 # NOTE: keep this file pure ASCII. A UTF-8 BOM or non-ASCII characters here can
 # make Windows PowerShell mis-parse the quotes in the command line.
@@ -33,9 +33,7 @@ function Resolve-Python {
     $candidates += @(
         'python',
         'python.exe',
-        'py',
-        'D:\Python\python3.14.7\python.exe',
-        'F:\Anaconda3\python.exe'
+        'py'
     )
 
     foreach ($candidate in $candidates) {
