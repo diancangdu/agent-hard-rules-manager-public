@@ -1,0 +1,675 @@
+{
+  "rules": [
+    {
+      "rule_id": "RULE_001",
+      "title": "敏感信息保护",
+      "category": "安全",
+      "trigger_keywords": [
+        "密码",
+        "API key",
+        "密钥",
+        "token",
+        "个人信息",
+        "隐私"
+      ],
+      "description": "涉及密码、密钥、token、个人信息等敏感内容时，必须遵守以下硬性要求，绝不能抱有侥幸心理。",
+      "must_execute_actions": [
+        "在 final 频道发送最终回复",
+        "使用绝对路径而非相对路径",
+        "不把敏感信息写入会被提交的代码或日志",
+        "向用户确认后再处理敏感数据"
+      ],
+      "forbidden_actions": [
+        "猜测用户意图后自行决定跳过安全检查",
+        "把密钥硬编码进源码",
+        "在聊天记录/日志中明文打印完整密钥"
+      ],
+      "severity": "high",
+      "created_by": "system",
+      "created_at": "2026-08-20T00:00:00+08:00",
+      "layer": [
+        "notebook",
+        "hook"
+      ],
+      "hook": {
+        "tools": [
+          "write",
+          "edit",
+          "str_replace_editor"
+        ],
+        "fields": [
+          "content",
+          "new_string",
+          "new_str",
+          "file_text"
+        ],
+        "any_of": [
+          "(?i)\\b(api[_-]?key|apikey|secret[_-]?key|client[_-]?secret|access[_-]?token|auth[_-]?token|refresh[_-]?token|password|passwd)\\b\\s*[:=]\\s*[\"'][A-Za-z0-9_\\-./+=]{16,}[\"']",
+          "\\b(sk-[A-Za-z0-9]{20,}|sk-ant-[A-Za-z0-9_\\-]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9\\-]{10,})\\b",
+          "-----BEGIN [A-Z ]*PRIVATE KEY-----"
+        ],
+        "action": "deny",
+        "reason": "命中死规则 RULE_001（敏感信息保护）：疑似把密钥 / 凭据硬编码进文件。请改为读取环境变量或 .env（并确认 .env 已在 .gitignore 中），源码里只保留占位符名，不要写入真实值。"
+      }
+    },
+    {
+      "rule_id": "RULE_002",
+      "title": "重构代码规范",
+      "category": "行为",
+      "trigger_keywords": [
+        "重构",
+        "refactor",
+        "优化",
+        "重写",
+        "改代码"
+      ],
+      "description": "进行代码重构或优化时，必须保持既有行为不变，先理解再动手。",
+      "must_execute_actions": [
+        "先读取现有代码结构和依赖关系",
+        "保持与现有代码风格一致",
+        "为关键改动添加必要注释",
+        "改动后运行测试验证不破坏现有功能"
+      ],
+      "forbidden_actions": [
+        "使用未经验证的第三方库函数",
+        "为追求性能而破坏现有功能",
+        "不经过测试就提交重构结果"
+      ],
+      "severity": "high",
+      "created_by": "system",
+      "created_at": "2026-08-20T00:00:00+08:00",
+      "layer": [
+        "notebook"
+      ]
+    },
+    {
+      "rule_id": "RULE_003",
+      "title": "禁止危险命令",
+      "category": "安全",
+      "trigger_keywords": [
+        "rm -rf",
+        "删除整个目录",
+        "格式化",
+        "清空数据库",
+        "DROP TABLE",
+        "危险命令",
+        "清理临时文件",
+        "清理文件",
+        "删文件",
+        "删除文件",
+        "删除目录",
+        "清空目录",
+        "清理缓存",
+        "强制删除",
+        "rm",
+        "del"
+      ],
+      "description": "涉及不可逆的破坏性操作时，必须先确认再执行，且优先使用可恢复的方式。",
+      "must_execute_actions": [
+        "执行前向用户明确说明后果并取得确认",
+        "优先使用回收站/备份等可恢复方式",
+        "危险命令执行前先备份相关数据"
+      ],
+      "forbidden_actions": [
+        "未经确认直接执行不可逆的删除/格式化命令",
+        "对生产环境执行破坏性 SQL",
+        "为省事而跳过备份步骤"
+      ],
+      "severity": "high",
+      "created_by": "system",
+      "created_at": "2026-08-20T00:00:00+08:00",
+      "layer": [
+        "notebook",
+        "hook"
+      ],
+      "hook": {
+        "tools": [
+          "bash",
+          "pwsh"
+        ],
+        "fields": [
+          "command"
+        ],
+        "any_of": [
+          "(?i)\\brm\\s+(-[A-Za-z]+\\s+)*-[A-Za-z]*[rR][A-Za-z]*[fF][A-Za-z]*\\s+(-[A-Za-z]+\\s+)*(/|/\\*|~|\\$HOME|\\$\\{HOME\\}|[A-Za-z]:[\\\\/])\\s*($|[;&|])",
+          "(?i)\\brm\\s+(-[A-Za-z]+\\s+)*-[A-Za-z]*[fF][A-Za-z]*[rR][A-Za-z]*\\s+(-[A-Za-z]+\\s+)*(/|~|\\$HOME|[A-Za-z]:[\\\\/])\\s*($|[;&|])",
+          "(?i)\\b(mkfs(\\.[a-z0-9]+)?|wipefs|diskpart|fdisk|parted)\\b",
+          "(?i)\\bformat\\s+[A-Za-z]:(\\s|$)",
+          "(?i)\\bdd\\s+[^\\n|]*\\bof=\\s*/dev/(sd|nvme|hd)",
+          "(?i)\\b(DROP\\s+(TABLE|DATABASE|SCHEMA)|TRUNCATE\\s+TABLE)\\b",
+          "(?i)\\b(Remove-Item|ri)\\b[^\\n|]*-Recurse[^\\n|]*-Force",
+          "(?i)\\bRemove-Item\\b[^\\n|]*-Force[^\\n|]*-Recurse",
+          "(?i)\\bdel\\s+/[sfq]\\b",
+          "(?i)\\b(rd|rmdir)\\s+/[sq]\\b",
+          ":\\(\\)\\s*\\{.*\\|.*&.*\\}\\s*;\\s*:"
+        ],
+        "action": "deny",
+        "reason": "命中死规则 RULE_003（禁止危险命令）：该命令包含不可逆的删除 / 格式化 / 破坏性操作（如清空根目录、格式化磁盘、DROP DATABASE、递归强删）。请先向用户说明后果并取得明确确认；能用回收站 / 备份等可恢复方式的，一律改用可恢复方式。"
+      }
+    },
+    {
+      "rule_id": "RULE_004",
+      "title": "修改配置文件必须保留备份",
+      "category": "技术",
+      "trigger_keywords": [
+        "配置文件",
+        "config",
+        ".toml",
+        ".json 配置",
+        "修改配置"
+      ],
+      "description": "修改任何配置文件或调度器（crontab、systemd、nginx、shell rc 等）前，先查看现有内容并备份。",
+      "must_execute_actions": [
+        "先读取现有配置内容",
+        "修改前复制一份备份（如 .bak）",
+        "尽量增量合并而非整文件覆盖"
+      ],
+      "forbidden_actions": [
+        "不查看原文件直接覆盖配置",
+        "用整文件替换掉原有注释和未改动部分",
+        "不备份就修改调度器配置"
+      ],
+      "severity": "medium",
+      "created_by": "system",
+      "created_at": "2026-08-20T00:00:00+08:00",
+      "layer": [
+        "notebook",
+        "hook"
+      ],
+      "hook": {
+        "tools": [
+          "write",
+          "edit",
+          "str_replace_editor"
+        ],
+        "path_not_any_of": [
+          "(?i)\\.(bak|orig|backup|bak\\d|old|save)(~)?$",
+          "~$",
+          "(?i)(^|[\\\\/])(backup|bak|copy)[-_.]",
+          "(?i)_\\d{8}\\.(ya?ml|json|toml|ini|cfg|conf|config|properties|env|xml)$"
+        ],
+        "path_must_exist": true,
+        "path_any_of": [
+          "(?i)(^|[\\\\/])[^\\\\/]+\\.(ya?ml|json|toml|ini|cfg|conf|config|properties|env|xml|plist|reg|service|desktop|editorconfig)$",
+          "(?i)(^|[\\\\/])\\.(env|gitconfig|npmrc|yarnrc|pnpmrc|bashrc|zshrc|profile|vimrc)$",
+          "(?i)(crontab|systemd|nginx|settings\\.ya?ml|cordis\\.(patch\\.)?ya?ml|config\\.toml)$"
+        ],
+        "path_exists": [
+          "${path}.bak",
+          "${path}.orig",
+          "${path}.backup",
+          "${path}.bak1",
+          "${path}~"
+        ],
+        "action": "deny",
+        "reason": "命中死规则 RULE_004（修改配置文件必须保留备份）：目标是配置文件，但同目录下未找到备份。请先复制一份备份（例如 `<文件名>.bak`）再改，或用增量合并而非整文件覆盖。注意：`.bak` 本身以及新建的配置文件不在此限。"
+      }
+    },
+    {
+      "title": "禁止在C盘下载或安装",
+      "category": "安全",
+      "severity": "high",
+      "trigger_keywords": [
+        "C盘",
+        "下载",
+        "安装",
+        "install",
+        "download"
+      ],
+      "description": "",
+      "must_execute_actions": [
+        "所有下载和安装操作必须放在非C盘目录",
+        "安装前先确认目标路径不在C盘",
+        "如果必须用系统盘",
+        "先告知用户并取得明确同意"
+      ],
+      "forbidden_actions": [
+        "禁止在C盘下载任何文件",
+        "禁止在C盘安装任何软件",
+        "禁止使用默认安装路径落到C盘"
+      ],
+      "created_by": "user",
+      "rule_id": "RULE_005",
+      "created_at": "2026-09-04T17:02:48+08:00",
+      "layer": [
+        "notebook",
+        "hook"
+      ],
+      "hook": {
+        "tools": [
+          "bash",
+          "pwsh"
+        ],
+        "fields": [
+          "command"
+        ],
+        "any_of": [
+          "(?i)\\b(curl|wget)\\b[^\\n|;&]*\\s-[oO]\\s*[\"']?C:[\\\\/]",
+          "(?i)\\b(Invoke-WebRequest|iwr)\\b[^\\n|;&]*-OutFile\\s+[\"']?C:[\\\\/]",
+          "(?i)\\b(Start-BitsTransfer|bitsadmin)\\b[^\\n|;&]*(?:-Destination|/transfer)\\s+[\"']?C:[\\\\/]",
+          "(?i)(?:>|>>)\\s*[\"']?C:[\\\\/](?:Users|Windows|Program\\s*Files|ProgramData|Temp)\\b",
+          "(?i)\\b(?:Expand-Archive|tar|unzip|7z\\s+x)\\b[^\\n|;&]*(?:-DestinationPath|-d|-C|-o)\\s+[\"']?C:[\\\\/]"
+        ],
+        "action": "deny",
+        "reason": "命中死规则 RULE_005（禁止在 C 盘下载或安装）：命令的下载 / 解压 / 安装目标落在 C 盘。请改到 F 盘等非系统盘路径后重试（D:\\data 或 F:\\ 下的独立目录）。"
+      }
+    },
+    {
+      "title": "默认隐藏控制台黑窗",
+      "category": "行为",
+      "severity": "high",
+      "trigger_keywords": [
+        "黑窗",
+        "控制台窗口",
+        "cmd窗口",
+        "命令行窗口",
+        "弹窗",
+        "启动进程",
+        "后台服务",
+        "Start-Process",
+        "子进程"
+      ],
+      "description": "启动任何进程时默认不产生可见的控制台黑窗；只有用户明确要求查看的窗口才允许显示。",
+      "must_execute_actions": [
+        "启动任何后台进程/服务/脚本时必须使用隐藏窗口方式：Start-Process -WindowStyle Hidden",
+        "无法隐藏时使用无控制台方式启动：CREATE_NO_WINDOW 或直接调用可执行文件",
+        "优先采用不创建可见控制台的调用方式，并把输出重定向到日志文件",
+        "若已弹出非必要的黑窗，立即结束该进程及其子进程",
+        "只有用户明确表示需要查看的控制台窗口才允许显示"
+      ],
+      "forbidden_actions": [
+        "默认弹出可见的控制台黑窗",
+        "让后台辅助进程或 MCP/桥接服务占用前台窗口",
+        "打开需要用户手动关闭的无关黑窗"
+      ],
+      "created_by": "user",
+      "rule_id": "RULE_014",
+      "created_at": "2026-09-22T21:15:47+08:00",
+      "layer": [
+        "notebook",
+        "hook"
+      ],
+      "hook": {
+        "tools": [
+          "bash",
+          "pwsh"
+        ],
+        "fields": [
+          "command"
+        ],
+        "any_of": [
+          "(?i)\\bStart-Process\\b",
+          "(?i)\\bStart-Job\\b[^\\n|]*\\bpython(w)?\\.exe\\b",
+          "(?i)\\bcmd(\\.exe)?\\s*/c\\s+start\\b"
+        ],
+        "all_of": [
+          "(?is)^(?!.*-WindowStyle\\s+Hidden).*$"
+        ],
+        "action": "deny",
+        "reason": "命中死规则 RULE_014（默认隐藏控制台黑窗）：该命令会启动进程但没有隐藏窗口。请改用 `Start-Process -WindowStyle Hidden`，或直接用 `CREATE_NO_WINDOW` / 无控制台方式，并把输出重定向到日志文件。若确实需要用户看到窗口，请先明确说明。"
+      }
+    },
+    {
+      "title": "重复性操作自动沉淀为 Skill",
+      "category": "行为",
+      "severity": "high",
+      "trigger_keywords": [
+        "重复性操作",
+        "重复做",
+        "每次都做",
+        "例行流程",
+        "固定流程",
+        "反复操作",
+        "写skill",
+        "沉淀经验"
+      ],
+      "description": "遇到有必要且会重复出现的操作流程时，Codex 应主动把它沉淀成可复用的 Skill，并在日常实践中持续完善，不能每次都从零推理。",
+      "must_execute_actions": [
+        "发现操作具有重复价值时先判断是否值得封装为 Skill",
+        "值得时直接创建或更新对应 Skill，包含清晰的 SKILL.md、触发条件、标准步骤与必要脚本",
+        "后续实践中根据真实使用反馈持续完善既有 Skill，优先改现有 Skill 而不是重复新建",
+        "创建或更新后在回复中明确告知用户 Skill 名称、位置和用途"
+      ],
+      "forbidden_actions": [
+        "把明显会反复使用的流程只留在当次对话里",
+        "每次遇到同一类操作都临时重写做法",
+        "未验证就宣称 Skill 已完成",
+        "为一次性琐事滥建无复用价值的 Skill"
+      ],
+      "created_by": "user",
+      "rule_id": "RULE_015",
+      "created_at": "2026-09-23T09:33:48+08:00",
+      "layer": [
+        "notebook"
+      ]
+    },
+    {
+      "title": "部署与发布前必须确认环境与回滚方案",
+      "category": "技术",
+      "severity": "high",
+      "trigger_keywords": [
+        "部署",
+        "发布",
+        "上线",
+        "deploy",
+        "release",
+        "publish",
+        "推到生产",
+        "生产环境",
+        "服务器"
+      ],
+      "description": "涉及部署、发布、上线的操作时，必须先确认目标环境、影响范围与回滚方式，避免误发到生产或无法回滚。",
+      "must_execute_actions": [
+        "先确认部署目标是测试环境还是生产环境",
+        "确认改动内容与影响范围",
+        "准备可执行的回滚方案或保留上一版本",
+        "部署后执行基本可用性与健康检查",
+        "把部署结果与回滚方式告知用户"
+      ],
+      "forbidden_actions": [
+        "未经确认直接把改动发布到生产环境",
+        "没有回滚方案就覆盖线上版本",
+        "跳过部署后验证直接宣布完成",
+        "在用户未授权时对生产数据做不可逆变更"
+      ],
+      "created_by": "user",
+      "rule_id": "RULE_016",
+      "created_at": "2026-09-23T09:44:52+08:00",
+      "layer": [
+        "notebook",
+        "hook"
+      ],
+      "hook": {
+        "tools": [
+          "bash",
+          "pwsh"
+        ],
+        "fields": [
+          "command"
+        ],
+        "any_of": [
+          "(?i)\\bgit\\s+push\\b[^\\n|;&]*(--force|-f\\b|--force-with-lease)?[^\\n|;&]*\\b(prod|production|main|master|release)\\b",
+          "(?i)\\b(npm|pnpm|yarn)\\s+publish\\b",
+          "(?i)\\b(twine|poetry)\\s+upload\\b",
+          "(?i)\\b(kubectl|helm)\\s+(apply|delete|upgrade|install)\\b",
+          "(?i)\\bterraform\\s+apply\\b",
+          "(?i)\\bdocker\\s+push\\b",
+          "(?i)\\b(vercel|netlify|firebase|wrangler)\\s+(deploy|publish|--prod)\\b",
+          "(?i)\\b(aws\\s+s3\\s+(cp|sync)|gcloud\\s+app\\s+deploy|az\\s+webapp\\s+deploy)\\b"
+        ],
+        "all_of": [
+          "(?is)^(?!.*(--dry-run|--dryrun|--plan|--check|--rollback|回滚|干跑|试运行)).*$",
+          "(?is)^(?!.*(到生产|部署到|publish\\s+to|deploy\\s+to|目标环境|rollback\\s*[:=]|rollback_plan)).*$"
+        ],
+        "action": "deny",
+        "reason": "命中死规则 RULE_016（部署与发布前必须确认环境与回滚方案）：这是部署 / 发布 / 上线类操作。请先确认目标环境（测试还是生产）、说明影响范围、准备可执行的回滚方案；或在命令中显式带上 --dry-run / --plan / 回滚方案说明后重试。"
+      }
+    },
+    {
+      "title": "工具类文件优先存放F盘",
+      "category": "行为",
+      "severity": "high",
+      "trigger_keywords": [
+        "工具",
+        "安装",
+        "下载",
+        "部署",
+        "新建项目",
+        "视觉工具",
+        "模型",
+        "权重",
+        "环境",
+        "venv",
+        "目录",
+        "存放位置",
+        "装到哪"
+      ],
+      "description": "像视觉工具、模型权重、运行环境这类工具性质的文件，优先放在F盘。只有两种情况例外：F盘可用空间小于40GB，或者用户特别指定了其他位置。",
+      "must_execute_actions": [
+        "创建或迁移工具类目录前先检查F盘剩余空间",
+        "F盘剩余空间>=40GB且用户未特别指定时，目标目录放在F盘",
+        "迁移后更新所有引用路径并验证功能可用",
+        "F盘空间不足或用户特别说明时，按用户指示的位置放置"
+      ],
+      "forbidden_actions": [
+        "F盘空间充足且用户未特别说明时仍把工具类文件放在其他盘",
+        "不检查空间就直接选择安装位置",
+        "迁移后留下失效的旧路径引用"
+      ],
+      "created_by": "user",
+      "rule_id": "RULE_017",
+      "created_at": "2026-09-23T10:04:57+08:00",
+      "layer": [
+        "notebook"
+      ]
+    },
+    {
+      "title": "安装前先检查本地是否已有",
+      "category": "行为",
+      "severity": "high",
+      "trigger_keywords": [
+        "安装",
+        "下载",
+        "install",
+        "download",
+        "pip",
+        "uv",
+        "npm",
+        "依赖",
+        "库",
+        "模型",
+        "权重",
+        "环境",
+        "venv",
+        "部署",
+        "装"
+      ],
+      "description": "任何下载或安装动作之前，必须先检查本地是否已经存在同名或同功能的软件、库、模型权重、虚拟环境。本地已有且满足需求时，直接复用，禁止重复下载或重复安装。",
+      "must_execute_actions": [
+        "安装或下载前先扫描本地磁盘查找已有的同名或同功能资源",
+        "优先复用已存在的环境、库、模型权重与安装包",
+        "确认本地确实没有或版本不满足时，才执行下载或安装",
+        "复用已有资源时记录其路径并在回复中说明"
+      ],
+      "forbidden_actions": [
+        "不检查本地就直接下载安装",
+        "重复安装本地已存在的库或环境",
+        "重复下载本地已有的模型权重",
+        "忽略已有可复用资源而新建一份副本"
+      ],
+      "created_by": "user",
+      "rule_id": "RULE_018",
+      "created_at": "2026-09-23T10:56:54+08:00",
+      "layer": [
+        "notebook"
+      ]
+    },
+    {
+      "title": "Projectless 任务目录必须固定且防更新漂移",
+      "category": "技术",
+      "trigger_keywords": [
+        "检查或修复 Codex 无项目任务文件夹 / projectless 任务存储位置漂移"
+      ],
+      "must_execute_actions": [
+        "确认 D:\\CodexHome\\.codex\\config.toml 的 [desktop] 段存在 projectlessWorkspaceRoot = 'D:\\CodexHome\\Projectless'",
+        "确认 C:\\Users\\you\\Documents\\Codex 是指向 D:\\CodexHome\\Projectless 的目录联接",
+        "防止配置被覆盖时数据落到 C 盘",
+        "改动前先备份 config.toml（RULE_004）",
+        "改动后 diff 校验只改了预期内容",
+        "验证新任务目录必须落在 F 盘",
+        "且不存在新出现的 C 盘真实目录"
+      ],
+      "forbidden_actions": [
+        "在未备份的情况下直接改写 config.toml",
+        "在 Codex 运行时直接外部改写 .codex-global-state.json",
+        "把 projectless 数据继续放在 C 盘"
+      ],
+      "severity": "high",
+      "rule_id": "RULE_019",
+      "description": "",
+      "created_by": "unknown",
+      "created_at": "2026-09-24T05:03:29+08:00",
+      "layer": [
+        "notebook",
+        "hook"
+      ],
+      "hook": {
+        "tools": [
+          "bash",
+          "pwsh"
+        ],
+        "fields": [
+          "command"
+        ],
+        "any_of": [
+          "(?i)\\bconfig\\.toml\\b"
+        ],
+        "all_of": [
+          "(?is)^(?!.*\\.bak).*$",
+          "(?is)^(?!.*(Copy-Item|cp\\s|备份|backup)).*$"
+        ],
+        "action": "deny",
+        "reason": "命中死规则 RULE_019（Projectless 任务目录必须固定且防更新漂移）：该命令会改动 `config.toml`。请先备份到 `.bak`，确认 [desktop] 段的 projectlessWorkspaceRoot，改后 diff 校验只改了预期内容，并验证任务目录仍落在 F 盘。"
+      }
+    },
+    {
+      "title": "复杂任务主动启用多子agent协作模式",
+      "category": "协作",
+      "trigger_keywords": [
+        "遇到主agent判断为比较复杂的任务时",
+        "复杂任务",
+        "多子agent",
+        "子agent协助",
+        "并行拆分",
+        "特别说明启用",
+        "特别说明不用"
+      ],
+      "must_execute_actions": [
+        "主agent在遇到自己判断为比较复杂的任务时",
+        "主动启用多子agent协助模式",
+        "复杂任务包括多工作流、多子系统、大范围并行检索或验证、可并行拆分且串行明显过慢等情形",
+        "由主agent自行设计如何指挥子agent",
+        "包括拆分方式、职责边界、派发顺序与回收方式",
+        "主agent同时与子agent协作",
+        "边派发边推进关键路径工作",
+        "不空等",
+        "具体设计思路与协作编排完全由主agent决定",
+        "不预设固定模板",
+        "主agent判定为简单任务时默认不启用该模式",
+        "子agent结果经主agent验证后再整合",
+        "并保证各子agent写范围不重叠",
+        "用户特别说明要启用或不要启用时，一律以用户说明为准"
+      ],
+      "forbidden_actions": [
+        "遇到复杂任务时仍坚持单agent串行硬做而不评估启用子agent",
+        "把复杂任务的拆分与指挥方式交给用户或其他模型决定",
+        "对主agent判定为简单的小任务强行启用多子agent模式",
+        "用户明确表示不需要多子agent时仍擅自启用",
+        "子agent之间重叠修改同一文件或共享可变状态",
+        "未经验证直接采信子agent结果并宣布完成"
+      ],
+      "severity": "high",
+      "rule_id": "RULE_020",
+      "description": "",
+      "created_by": "unknown",
+      "created_at": "2026-09-24T07:13:01+08:00",
+      "layer": [
+        "notebook"
+      ]
+    },
+    {
+      "rule_id": "RULE_021",
+      "title": "任务前加载经验、任务后反思沉淀",
+      "category": "协作",
+      "trigger_keywords": [
+        "任务开始",
+        "任务收尾",
+        "经验",
+        "教训",
+        "反思",
+        "沉淀",
+        "自我学习",
+        "自学习",
+        "经验库",
+        "learnings",
+        "踩坑",
+        "重复犯错"
+      ],
+      "description": "dsh-self-improve 自学习闭环的强制约束层：任务前先查经验库并应用；任务中/收尾时**由 agent 自行判断**是否值得记录——仅在确有可复用内容时记，禁止每轮机械反思、禁止凑数。记录保持静默，不向用户输出反思过程。",
+      "must_execute_actions": [
+        "开始任何新任务前，先查经验库是否已有同类经验：python $DSH_HOME/skills/dsh-self-improve/learn.py query \"关键词\"（或直接读取 $DSH_HOME/skills/dsh-self-improve/.learnings/ 下三个文件） --dir $DSH_HOME/skills/dsh-self-improve/.learnings",
+        "查到相关经验必须照做，不得重复已知错误",
+        "是否反思、何时反思**由 agent 自行判断**：出现错误 / 走了弯路 / 解决了非显而易见的问题 / 用户纠正了你的判断时，才做一次反思判定；**不要机械地每轮都反思**（2026-09-25 用户明确要求）",
+        "判定确有可复用内容才记录，并按类型分流：正向经验进 LEARNINGS.md、失败教训进 ERRORS.md、多条提炼出的高层准则进 BEST_PRACTICES.md",
+        "记录命令统一使用：python $DSH_HOME/skills/dsh-self-improve/learn.py add learn|error|best_practice --title \"...\" --body \"...\" --dir $DSH_HOME/skills/dsh-self-improve/.learnings",
+        "判定为无可复用内容时不记录任何条目，也不向用户提及",
+        "**记录保持静默**：不得把反思判定的过程、结论或自问自答输出给用户；经验库本身即审计轨迹（2026-09-25 用户明确要求）",
+        "启用多子agent协作（RULE_020）时，经验由主agent统一判断并记录，子agent只负责上报发现",
+        "与 RULE_015 划清边界：单点知识先记成经验条目，同一流程反复出现后才升级为 Skill；先记经验，再升级 Skill，不是二选一",
+        "记入经验库的结论必须是经验证的，未验证的推测不得当作经验写入（RULE_002 同理）"
+      ],
+      "forbidden_actions": [
+        "为了凑数把一次性琐事、临时细节记进经验库制造噪音",
+        "把反思判定的过程 / 结论 / 自问自答输出到回复里（2026-09-25 用户要求静默）",
+        "不判断价值就每轮机械地做一次反思判定（2026-09-25 用户明确要求改为按需触发）",
+        "把密钥、token、密码、个人信息等敏感内容写入经验库（RULE_001）",
+        "未经验证就宣称经验已沉淀",
+        "抢 RULE_015 的活：把本该封装成可复用 Skill 的完整流程只记成一条经验就算完",
+        "每个子agent各自写经验条目导致同一件事重复入库",
+        "跳过任务前的经验查询，凭记忆重新踩已知的坑"
+      ],
+      "severity": "high",
+      "created_by": "user",
+      "created_at": "2026-09-24T07:22:48+08:00",
+      "layer": [
+        "notebook"
+      ]
+    },
+    {
+      "title": "有用的经验由主agent自行判断并写入经验库",
+      "category": "协作",
+      "trigger_keywords": [
+        "任务执行中或收尾时，主agent发现确有复用价值的经验、教训或高层准则",
+        "以及主agent自觉犯了错误、出现空操作、走了弯路时。"
+      ],
+      "must_execute_actions": [
+        "主agent判断某条经验确有复用价值时",
+        "直接写入经验库",
+        "无需逐条征求用户同意",
+        "写入类型按内容分流：正向经验进 LEARNINGS.md、失败教训进 ERRORS.md、多条提炼的高层准则进 BEST_PRACTICES.md",
+        "写入命令统一使用：python $DSH_HOME/skills/dsh-self-improve/learn.py add learn|error|best_practice --title \"...\" --body \"...\" --dir $DSH_HOME/skills/dsh-self-improve/.learnings",
+        "**写入后保持静默**：不在回复中提及记录这件事；仅当用户明确问起时才用一行说明条数与文件（2026-09-25 用户要求静默）",
+        "保持可审计 —— 审计轨迹就是经验库本身，不靠回复留痕",
+        "对自身错误、失败、空操作的教训必须主动记录",
+        "不得因为不好看而隐瞒",
+        "记录前仍须满足 RULE_021 的验证要求：只记已验证的结论",
+        "不把推测当经验"
+      ],
+      "forbidden_actions": [
+        "为了凑数把一次性琐事、临时细节记进经验库制造噪音（RULE_021）",
+        "把反思判定的过程 / 结论 / 自问自答输出到回复里（2026-09-25 用户要求静默）",
+        "把密钥、token、密码、个人信息等敏感内容写入经验库（RULE_001）",
+        "未经验证就宣称经验已沉淀（RULE_021）",
+        "发现自己的错误或空操作后不记录、等着被问再说",
+        "把本该封装成可复用 Skill 的完整流程只记成一条经验就算完（RULE_015）",
+        "每个子agent各自写经验条目导致同一件事重复入库（RULE_020）"
+      ],
+      "severity": "high",
+      "rule_id": "RULE_022",
+      "description": "",
+      "created_by": "unknown",
+      "created_at": "2026-09-24T07:41:40+08:00",
+      "layer": [
+        "notebook"
+      ]
+    }
+  ],
+  "last_updated": "2026-09-25T15:15:38+08:00",
+  "_schema": {
+    "layer": "notebook = agent reads on demand; hook = machine-enforced gate",
+    "hook.tools": "DSH/Claude tool names this gate matches (PreToolUse matcher subject)",
+    "hook.fields": "tool_input sub-keys scanned",
+    "hook.any_of": "block if ANY regex matches",
+    "hook.all_of": "block only if ALL regexes match"
+  }
+}

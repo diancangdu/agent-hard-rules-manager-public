@@ -1,0 +1,20 @@
+# machine-local, generated at deploy time — contains absolute paths of this machine
+hooks/hooks.local.json
+
+# backups produced by the installers and one-shot migration scripts
+*.bak
+*.bak_*
+rules/*.bak*
+**/*.bak_*
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# os noise
+Thumbs.db
+Desktop.ini
+.DS_Store

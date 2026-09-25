@@ -1,0 +1,11 @@
+{
+  "name": "dsh-rule-gate",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Native hard-rule gate: blocks tool calls matched by the agent-hard-rules hook rules at tools/pre-execute.",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  }
+}
